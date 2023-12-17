@@ -28,7 +28,7 @@
 #' @export
 send <- function(to, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL) {
   # Initialize Outlook and get Namespace
-  Outlook <- COMCreate("Outlook.Application")
+  Outlook <- RDCOMClient::COMCreate("Outlook.Application")
 
   # Create a new MailItem object
   email <- Outlook$CreateItem(0)

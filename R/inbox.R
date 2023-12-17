@@ -20,7 +20,7 @@ inbox <-
   function (com.object = "Outlook.Application",
             namespace.name = "MAPI") {
     # Initialize Outlook and get Namespace
-    Outlook <- COMCreate(com.object)
+    Outlook <- RDCOMClient::COMCreate(com.object)
     if (is.null(Outlook)) {
       stop("Failed to create COM object. Make sure Outlook is installed and running.")
     }
