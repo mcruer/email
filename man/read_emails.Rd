@@ -6,6 +6,11 @@
 \usage{
 read_emails(
   most.recent.n = NULL,
+  after.this.date = NULL,
+  with.subject.like = NULL,
+  subject.exact.match = FALSE,
+  in.folder.name = "Inbox",
+  in.account.name = NULL,
   date_sent = TRUE,
   date_received = TRUE,
   body = TRUE,
@@ -16,6 +21,16 @@ read_emails(
 }
 \arguments{
 \item{most.recent.n}{Number of most recent emails to read. Default is NULL, which reads all emails.}
+
+\item{after.this.date}{A POSIXct date/time. Only emails newer than this date/time will be returned. Default is NULL which retrieves all emails.}
+
+\item{with.subject.like}{A character string with the subject line to be searched for. Default is NULL which returns emails with any subject.}
+
+\item{subject.exact.match}{Indicates whether the subject line search will look for exact matches only, or whether it will check if the subject string is in the email's subject. Default is "FALSE" which indicates do not look for exact match.}
+
+\item{in.folder.name}{Name of folder within account in which to search. Default is "Inbox".}
+
+\item{in.account.name}{Name of account in which to search. Default is NULL, which searches in the user's default Outlook account.}
 
 \item{date_sent}{Logical, whether to include the sent date. Default is TRUE.}
 
@@ -33,5 +48,5 @@ read_emails(
 A tibble containing the extracted email information.
 }
 \description{
-This function reads the most recent emails and extracts specified information.
+This function reads emails from an Outlook folder, with option to filter by given number of most recent emails, emails only after a certain date, emails with a certain subject, or all of the above. It extracts specified information.
 }
