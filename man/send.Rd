@@ -11,6 +11,7 @@ send(
   bcc = NULL,
   subject,
   body,
+  html_body = NULL,
   attachment_paths = NULL
 )
 }
@@ -26,6 +27,8 @@ send(
 \item{subject}{A character string specifying the email subject.}
 
 \item{body}{A character string specifying the email body.}
+
+\item{html_body}{A character string specifying the email body in html format. Default is NULL, in which case 'body' will be used instead.}
 
 \item{attachment_paths}{A character vector specifying the full file paths of the attachments. Default is NULL.}
 }
