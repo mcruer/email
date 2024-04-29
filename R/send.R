@@ -1,8 +1,9 @@
 #' Send an Email via Outlook with Optional Multiple Attachments
 #'
-#' This function sends an email using Microsoft Outlook. It allows you to specify recipients in the "To", "CC", and "BCC" fields, and optionally attach multiple files.
+#' This function sends an email using Microsoft Outlook. It allows you to specify recipients in the "To", "From", "CC", and "BCC" fields, and optionally attach multiple files.
 #'
 #' @param to A character vector of recipient email addresses for the "To" field.
+#' @param from A character string specifying the sender's email address for the "From" field.
 #' @param cc A character vector of recipient email addresses for the "CC" field. Default is NULL.
 #' @param bcc A character vector of recipient email addresses for the "BCC" field. Default is NULL.
 #' @param subject A character string specifying the email subject.
@@ -15,6 +16,7 @@
 #' \dontrun{
 #' send(
 #'   to = c("recipient1@example.com", "recipient2@example.com"),
+#'   from = "sender@example.com",
 #'   cc = c("cc1@example.com", "cc2@example.com"),
 #'   bcc = c("bcc1@example.com", "bcc2@example.com"),
 #'   subject = "Test Subject",
@@ -26,7 +28,7 @@
 #' @importFrom purrr walk
 #'
 #' @export
-send <- function(to, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL) {
+send <- function(to, from = NULL, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL) {
   # Initialize Outlook and get Namespace
   Outlook <- RDCOMClient::COMCreate("Outlook.Application")
 
@@ -40,6 +42,7 @@ send <- function(to, cc = NULL, bcc = NULL, subject, body, attachment_paths = NU
 
   # Set the properties of the email
   email[["To"]] <- to
+  if (!is.null(from)) email[["SentOnBehalfOfName"]] = from
   if (!is.null(cc)) email[["CC"]] <- cc
   if (!is.null(bcc)) email[["BCC"]] <- bcc
   email[["Subject"]] <- subject

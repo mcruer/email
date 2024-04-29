@@ -4,10 +4,20 @@
 \alias{send}
 \title{Send an Email via Outlook with Optional Multiple Attachments}
 \usage{
-send(to, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL)
+send(
+  to,
+  from = NULL,
+  cc = NULL,
+  bcc = NULL,
+  subject,
+  body,
+  attachment_paths = NULL
+)
 }
 \arguments{
 \item{to}{A character vector of recipient email addresses for the "To" field.}
+
+\item{from}{A character string specifying the sender's email address for the "From" field.}
 
 \item{cc}{A character vector of recipient email addresses for the "CC" field. Default is NULL.}
 
@@ -23,12 +33,13 @@ send(to, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL)
 A message indicating the email was sent successfully.
 }
 \description{
-This function sends an email using Microsoft Outlook. It allows you to specify recipients in the "To", "CC", and "BCC" fields, and optionally attach multiple files.
+This function sends an email using Microsoft Outlook. It allows you to specify recipients in the "To", "From", "CC", and "BCC" fields, and optionally attach multiple files.
 }
 \examples{
 \dontrun{
 send(
   to = c("recipient1@example.com", "recipient2@example.com"),
+  from = "sender@example.com",
   cc = c("cc1@example.com", "cc2@example.com"),
   bcc = c("bcc1@example.com", "bcc2@example.com"),
   subject = "Test Subject",

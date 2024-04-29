@@ -254,9 +254,14 @@ date_sent <- function(email) {
 # read_emails ---------
 #' Read Emails and Extract Information
 #'
-#' This function reads the most recent emails and extracts specified information.
+#' This function reads emails from an Outlook folder, with option to filter by given number of most recent emails, emails only after a certain date, emails with a certain subject, or all of the above. It extracts specified information.
 #'
 #' @param most.recent.n Number of most recent emails to read. Default is NULL, which reads all emails.
+#' @param after.this.date A POSIXct date/time. Only emails newer than this date/time will be returned. Default is NULL which retrieves all emails.
+#' @param with.subject.like A character string with the subject line to be searched for. Default is NULL which returns emails with any subject.
+#' @param subject.exact.match Indicates whether the subject line search will look for exact matches only, or whether it will check if the subject string is in the email's subject. Default is "FALSE" which indicates do not look for exact match.
+#' @param in.folder.name Name of folder within account in which to search. Default is "Inbox".
+#' @param in.account.name Name of account in which to search. Default is NULL, which searches in the user's default Outlook account.
 #' @param date_sent Logical, whether to include the sent date. Default is TRUE.
 #' @param date_received Logical, whether to include the received date. Default is TRUE.
 #' @param body Logical, whether to include the email body. Default is TRUE.
@@ -274,6 +279,11 @@ date_sent <- function(email) {
 #' @export
 read_emails <- function (
   most.recent.n = NULL,
+  after.this.date = NULL,
+  with.subject.like = NULL,
+  subject.exact.match = FALSE,
+  in.folder.name = "Inbox",
+  in.account.name = NULL,
   date_sent = TRUE,
   date_received = TRUE,
   body = TRUE,
@@ -283,9 +293,16 @@ read_emails <- function (
 ){
 
   # Validate arguments
-  if (!is.null(most.recent.n) && (!is.numeric(most.recent.n) || most.recent.n <= 0)) {
-    stop("Invalid value for most.recent.n.")
+  if (!is.null(most.recent.n) & (!is.numeric(most.recent.n) || most.recent.n <= 0)) {
+    stop("Invalid value for most.recent.n. Please input a positive integer.")
   }
+  if (!is.null(after.this.date) & !('POSIXct' %in% class(after.this.date))) {
+    stop("Invalid date for after.this.date. Please use POSIXct format.")
+  }
+  if (typeof(subject.exact.match) != 'logical') {
+    stop("Invalid input for subject_exact_match. Please use logical format.")
+  }
+
 
   # Define which functions to run based on arguments
   func_list <- tibble::tribble(
@@ -302,7 +319,12 @@ read_emails <- function (
 
   # Get emails
   emails <- tryCatch(
-    email::get_emails(most.recent.n = most.recent.n),
+    email::get_emails(most.recent.n = most.recent.n,
+                      after.this.date = after.this.date,
+                      subject = with.subject.like,
+                      subject.exact.match = subject.exact.match,
+                      folder.name = in.folder.name,
+                      account.name = in.account.name),
     error = function(e) {
       stop("Failed to get emails.")
     }

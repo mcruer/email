@@ -2,22 +2,40 @@
 % Please edit documentation in R/get_emails.R
 \name{get_emails}
 \alias{get_emails}
-\title{Get Most Recent Emails from Outlook Inbox}
+\title{Get Most Recent Emails from Outlook Folder}
 \usage{
-get_emails(most.recent.n = NULL)
+get_emails(
+  most.recent.n = NULL,
+  after.this.date = NULL,
+  subject = NULL,
+  subject.exact.match = FALSE,
+  folder.name = "Inbox",
+  account.name = NULL
+)
 }
 \arguments{
 \item{most.recent.n}{An integer specifying the number of most recent emails to retrieve. Default is NULL, which retrieves all emails.}
+
+\item{after.this.date}{A POSIXct date/time. Only emails newer than this date/time will be returned. Default is NULL which retrieves all emails.}
+
+\item{subject}{A character string with the subject line to be searched for. Default is NULL which returns emails with any subject.}
+
+\item{subject.exact.match}{Indicates whether the subject line search will look for exact matches only, or whether it will check if the subject string is in the email's subject. Default is "FALSE" which indicates do not look for exact match.}
+
+\item{folder.name}{Name of folder within account in which to search. Default is "Inbox".}
+
+\item{account.name}{Name of account in which to search. Default is NULL, which searches in the user's default Outlook account.}
 }
 \value{
 A list of COM objects representing the most recent emails in the Outlook inbox.
 }
 \description{
-This function retrieves the most recent emails from the Outlook inbox.
+This function retrieves emails from an Outlook folder, with option to filter by given number of most recent emails, emails only after a certain date, emails with a certain subject, or all of the above.
 }
 \examples{
 \dontrun{
 recent_emails <- get_emails(most.recent.n = 10)
+emails_sent_after <-  get_emails(account.name = "me@example.com", folder.name = "Sent Items", after.this.date = as.POSIXct("2000-12-31 10:30:00",tz="EST") )
 }
 
 }
