@@ -8,6 +8,7 @@
 #' @param bcc A character vector of recipient email addresses for the "BCC" field. Default is NULL.
 #' @param subject A character string specifying the email subject.
 #' @param body A character string specifying the email body.
+#' @param html_body A character string specifying the email body in html format. Default is NULL, in which case 'body' will be used instead.
 #' @param attachment_paths A character vector specifying the full file paths of the attachments. Default is NULL.
 #'
 #' @return A message indicating the email was sent successfully.
@@ -28,7 +29,7 @@
 #' @importFrom purrr walk
 #'
 #' @export
-send <- function(to, from = NULL, cc = NULL, bcc = NULL, subject, body, attachment_paths = NULL) {
+send <- function(to, from = NULL, cc = NULL, bcc = NULL, subject, body, html_body = NULL, attachment_paths = NULL) {
   # Initialize Outlook and get Namespace
   Outlook <- RDCOMClient::COMCreate("Outlook.Application")
 
@@ -46,7 +47,13 @@ send <- function(to, from = NULL, cc = NULL, bcc = NULL, subject, body, attachme
   if (!is.null(cc)) email[["CC"]] <- cc
   if (!is.null(bcc)) email[["BCC"]] <- bcc
   email[["Subject"]] <- subject
-  email[["Body"]] <- body
+
+  if (!is.null(html_body)) {
+    email[['BodyFormat']] = 'olFormatHTML'
+    email[['HTMLBody']] = html_body
+  } else {
+    email[["Body"]] <- body
+  }
 
   # Add attachments if specified
   if (!is.null(attachment_paths)) {
