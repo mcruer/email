@@ -2,10 +2,10 @@
 % Please edit documentation in R/send.R
 \name{send}
 \alias{send}
-\title{Send an Email via Outlook with Optional Multiple Attachments}
+\title{Send an Email via Outlook with Optional HTML and Attachments}
 \usage{
 send(
-  to,
+  to = NULL,
   from = NULL,
   cc = NULL,
   bcc = NULL,
@@ -16,38 +16,55 @@ send(
 )
 }
 \arguments{
-\item{to}{A character vector of recipient email addresses for the "To" field.}
+\item{to}{Optional. A character vector of primary recipient email addresses.
+At least one of `to`, `cc`, or `bcc` must be specified.}
 
-\item{from}{A character string specifying the sender's email address for the "From" field.}
+\item{from}{Optional. A character string specifying the sender to send on
+behalf of (Outlook "SentOnBehalfOfName").}
 
-\item{cc}{A character vector of recipient email addresses for the "CC" field. Default is NULL.}
+\item{cc}{Optional. A character vector of CC recipients.}
 
-\item{bcc}{A character vector of recipient email addresses for the "BCC" field. Default is NULL.}
+\item{bcc}{Optional. A character vector of BCC recipients.}
 
 \item{subject}{A character string specifying the email subject.}
 
-\item{body}{A character string specifying the email body.}
+\item{body}{Plain-text body of the email. Must not be supplied together with
+`html_body`.}
 
-\item{html_body}{A character string specifying the email body in html format. Default is NULL, in which case 'body' will be used instead.}
+\item{html_body}{HTML body of the email. Must not be supplied together with
+`body`.}
 
-\item{attachment_paths}{A character vector specifying the full file paths of the attachments. Default is NULL.}
+\item{attachment_paths}{Optional character vector of file paths to attach.}
 }
 \value{
-A message indicating the email was sent successfully.
+A message indicating that the email was sent successfully.
 }
 \description{
-This function sends an email using Microsoft Outlook. It allows you to specify recipients in the "To", "From", "CC", and "BCC" fields, and optionally attach multiple files.
+This function sends an email using Microsoft Outlook. At least one recipient
+must be supplied through `to`, `cc`, or `bcc`. The message body must be
+provided either as plain text (`body`) or HTML (`html_body`), but not both.
 }
 \examples{
 \dontrun{
+# Plain text email
 send(
-  to = c("recipient1@example.com", "recipient2@example.com"),
-  from = "sender@example.com",
-  cc = c("cc1@example.com", "cc2@example.com"),
-  bcc = c("bcc1@example.com", "bcc2@example.com"),
-  subject = "Test Subject",
-  body = "This is a test email.",
-  attachment_paths = c("C:/path/to/your/file1.txt", "C:/path/to/your/file2.txt")
+  to = "recipient@example.com",
+  subject = "Test",
+  body = "This is a plain text message."
+)
+
+# HTML email with CC only
+send(
+  cc = "someone@example.com",
+  subject = "Test HTML",
+  html_body = "<b>Hello!</b>"
+)
+
+# BCC-only email (allowed)
+send(
+  bcc = "hidden@example.com",
+  subject = "BCC announcement",
+  body = "This message has no To/CC recipients."
 )
 }
 
