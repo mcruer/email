@@ -51,7 +51,7 @@ send <- function(
     cc = NULL,
     bcc = NULL,
     subject,
-    body,
+    body = NULL,
     html_body = NULL,
     attachment_paths = NULL
 ) {
