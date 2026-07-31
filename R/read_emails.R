@@ -58,6 +58,108 @@ attachment_count <- function(email) {
   return(result)
 }
 
+# Save Attachments --------
+#' Save an Email's Attachments to Disk
+#'
+#' This function saves one or more attachments from a given email object to a
+#' folder on disk, optionally filtering which attachments to save and renaming
+#' them on the way out. Useful for automated workflows such as pulling a
+#' specific file out of a recurring weekly email.
+#'
+#' @param email A COMIDispatch object representing an email.
+#' @param path A character string giving the directory to save attachment(s)
+#'   into. The directory must already exist.
+#' @param attachment.pattern Optional character string (regex) used to filter
+#'   attachments by file name, e.g. "\\\\.zip$" to only save zip files.
+#'   Default is NULL, which matches all attachments on the email.
+#' @param file_name Optional character vector of new file name(s) to save the
+#'   matched attachment(s) as (e.g. "weekly_report.zip"). If supplied, its
+#'   length must equal the number of matched attachments. Default is NULL,
+#'   which keeps each attachment's original file name.
+#' @param overwrite Logical, whether to overwrite a file already existing at
+#'   the destination path. Default is TRUE.
+#'
+#' @return A character vector of the full file paths the attachment(s) were
+#'   saved to, returned invisibly.
+#' @importFrom purrr walk2
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' email_obj <- get_emails(most.recent.n = 1, subject = "Weekly Report")[[1]]
+#'
+#' # Save every attachment using its original name
+#' save_attachments(email_obj, path = "C:/reports")
+#'
+#' # Save just the zip attachment under a new name
+#' save_attachments(
+#'   email_obj,
+#'   path = "C:/reports",
+#'   attachment.pattern = "\\.zip$",
+#'   file_name = "weekly_report.zip"
+#' )
+#' }
+save_attachments <- function(email,
+                              path,
+                              attachment.pattern = NULL,
+                              file_name = NULL,
+                              overwrite = TRUE) {
+  if (!inherits(email, "COMIDispatch")) {
+    stop("Invalid email object.")
+  }
+  if (!dir.exists(path)) {
+    stop("The specified path does not exist: ", path)
+  }
+
+  attachments <- email$Attachments()
+  n_attachments <- tryCatch(attachments$Count(), error = function(e) 0L)
+
+  if (n_attachments == 0) {
+    warning("No attachments found.")
+    return(invisible(character(0)))
+  }
+
+  indices <- seq_len(n_attachments)
+  original_names <- vapply(indices, function(i) attachments$Item(i)$FileName(), character(1))
+
+  if (!is.null(attachment.pattern)) {
+    matched <- grepl(attachment.pattern, original_names)
+    indices <- indices[matched]
+    original_names <- original_names[matched]
+  }
+
+  if (length(indices) == 0) {
+    warning("No attachments matched attachment.pattern.")
+    return(invisible(character(0)))
+  }
+
+  if (!is.null(file_name)) {
+    if (length(file_name) != length(indices)) {
+      stop(
+        "file_name has length ", length(file_name),
+        " but ", length(indices), " attachment(s) matched. ",
+        "Use attachment.pattern to narrow down to the intended attachment(s), ",
+        "or supply one file_name per matched attachment."
+      )
+    }
+    save_names <- file_name
+  } else {
+    save_names <- original_names
+  }
+
+  save_paths <- file.path(path, save_names)
+
+  purrr::walk2(indices, save_paths, function(i, save_path) {
+    if (file.exists(save_path) && !overwrite) {
+      warning("File already exists and overwrite = FALSE, skipping: ", save_path)
+      return(invisible(NULL))
+    }
+    attachments$Item(i)$SaveAsFile(save_path)
+  })
+
+  return(invisible(save_paths))
+}
+
 # Sender ------
 
 #' Get the Sender of an Email
