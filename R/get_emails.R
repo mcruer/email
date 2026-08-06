@@ -78,6 +78,9 @@ get_emails <- function (most.recent.n = NULL,
   if (!is.null(subject)) {
     accept_subject <- function(email, index) {
       email_subject <- email::subject(email)
+      if (length(email_subject) == 0 || is.na(email_subject)) {
+        return(0)
+      }
       if (grepl(subject, email_subject, fixed = subject.exact.match)) {
         return(index)
       }

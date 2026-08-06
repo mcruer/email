@@ -253,6 +253,10 @@ subject <- function(email) {
     }
   )
 
+  if (is.null(result)) {
+    result <- NA_character_
+  }
+
   return(result)
 }
 
