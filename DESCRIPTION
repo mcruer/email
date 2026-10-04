@@ -1,11 +1,12 @@
 Package: email
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Send and Read Outlook Email from R
 Version: 0.1.1
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R:
+    person("Geordie", "McRuer", , "geo.mcruer@gmail.com", role = c("aut", "cre"))
+Description: Sends email through Microsoft Outlook and reads messages from Outlook folders,
+    using the Windows COM interface ('RDCOMClient'). Used by the 'tina' package
+    for every report, reminder and alert it emails.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
