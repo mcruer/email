@@ -53,58 +53,46 @@ get_emails <- function (most.recent.n = NULL,
     stop("Invalid input for subject_exact_match. Please use logical format.")
   }
 
-  # Set up:
-  n_emails <- n_valid_emails <- email_handle$Count()
-  get_email <- folder$Items
-  email_start_index = 1
-  if (is.null(most.recent.n)) most.recent.n <- n_emails
+  # Sort newest first. Outlook doesn't guarantee that the folder's index order
+  # matches received order, so we sort explicitly. Sort() reorders this same
+  # Items collection in place, so Item(1) is now the newest item.
+  email_handle$Sort("[ReceivedTime]", TRUE)
 
-  # DATE FILTER: Get index for where emails start to have date that is newer than after.this.date
-  ##N2S: This assumes user wants more recent emails. But we should solidify this with a bisector method or something in case they're pulling 10 years' worth of emails
-  if (!is.null(after.this.date)) {
-    email_index <- n_emails
-    email_date <- convert_comdate(get_email(n_emails)$ReceivedTime(), tz='EST')
-    while (email_date > after.this.date) {
-      email_index = email_index - 1
-      if (email_index < 1) break
-      email_date <- convert_comdate(get_email(email_index)$ReceivedTime(), tz='EST')
-    }
+  n_items <- email_handle$Count()
+  if (is.null(most.recent.n)) most.recent.n <- n_items
 
-    email_start_index = email_index + 1
-    n_valid_emails = n_emails - email_start_index + 1
+  # Not everything in a folder is an email: read receipts, delivery reports,
+  # task requests, etc. have no ReceivedTime and error if asked for one.
+  # Return NA for those so they can be skipped.
+  received_time <- function(item) {
+    tryCatch(
+      convert_comdate(item$ReceivedTime(), tz = 'EST'),
+      error = function(e) NA
+    )
   }
 
-  # SUBJECT FILTER: Make a helper function that checks if subject is what we want
-  if (!is.null(subject)) {
-    accept_subject <- function(email, index) {
-      email_subject <- email::subject(email)
-      if (grepl(subject, email_subject, fixed = subject.exact.match)) {
-        return(index)
-      }
-      return(0)
-    }
-
-    indices_of_valid_subjects <- unlist(purrr::map(email_start_index:n_emails, ~accept_subject(get_email(.), .), .progress = "text"))
-    indices_of_valid_subjects <- indices_of_valid_subjects[indices_of_valid_subjects!=0]
-
-    n_valid_emails <- length(indices_of_valid_subjects)
-
+  accept_subject <- function(item) {
+    if (is.null(subject)) return(TRUE)
+    item_subject <- tryCatch(item$Subject(), error = function(e) NA_character_)
+    isTRUE(grepl(subject, item_subject, fixed = subject.exact.match))
   }
 
-  # NUMBER FILTER: Get most recent number
-  if (n_valid_emails < most.recent.n) {
-    most.recent.n = n_valid_emails
+  # Walk from newest to oldest, stopping once we have enough emails or hit one
+  # older than after.this.date (everything after it is older still).
+  emails <- list()
+  index <- 1
+  while (index <= n_items && length(emails) < most.recent.n) {
+    item <- email_handle$Item(index)
+    index <- index + 1
+
+    item_date <- received_time(item)
+    if (is.na(item_date)) next
+    if (!is.null(after.this.date) && item_date <= after.this.date) break
+    if (!accept_subject(item)) next
+
+    emails <- c(emails, list(item))
   }
 
-  # Get the emails:
-  if (exists('indices_of_valid_subjects')) {
-    emails <- purrr::map(tail(indices_of_valid_subjects, most.recent.n), ~email_handle$Item(.), .progress = "text")
-  } else {
-    emails <- purrr::map((n_emails - most.recent.n + 1):n_emails, ~email_handle$Item(.), .progress = "text")
-  }
-
-  return(emails)
+  # Return oldest to newest, matching previous behaviour
+  return(rev(emails))
 }
-
-
-
